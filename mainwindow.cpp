@@ -16,6 +16,7 @@
 #include <QtConcurrent>
 #include "customloadingdialog.h"
 #include <QFileDialog>
+#include <QPageLayout>
 #include <QPrintPreviewDialog>
 #include <qlabelclick.h>
 
@@ -570,8 +571,8 @@ void MainWindow::on_listWidget_itemDoubleClicked(QListWidgetItem *_item)
 
 void MainWindow::printPreview(QPrinter* printer)
 {
-    printer->setPageSize(QPrinter::A4);
-    printer->setOrientation(QPrinter::Landscape);
+    printer->setPageSize(QPageSize::A4);
+    printer->setPageOrientation(QPageLayout::Landscape);
     //printer->setPageMargins (0,0,0,0,QPrinter::Millimeter);
     printer->setFullPage(true);
 
@@ -582,12 +583,12 @@ void MainWindow::printPreview(QPrinter* printer)
     NVU::generate(lWPs, fork, dat);
     QPainter painter(printer); // create a painter which will paint 'on printer'.
 
-    QRect prect = printer->pageRect();
+    QRectF prect = printer->pageRect(QPrinter::DevicePixel);
     QRect defvp = painter.viewport();
     if(ui->actionNightmode->isChecked()) painter.fillRect(prect, Qt::black);
     prect.setY(1000);
     prect.setX(1000);
-    painter.setViewport(prect);
+    painter.setViewport(prect.toRect());
 
 
 //#ifdef _WIN32
@@ -609,11 +610,11 @@ void MainWindow::printPreview(QPrinter* printer)
             if(ui->actionAt_every_page->isChecked()) painterDrawSummary(painter, lWPs, y);
             printer->newPage();
             painter.setViewport(defvp);
-            prect = printer->pageRect();
+            prect = printer->pageRect(QPrinter::DevicePixel);
             if(ui->actionNightmode->isChecked()) painter.fillRect(prect, Qt::black);
             prect.setY(1000);
             prect.setX(1000);
-            painter.setViewport(prect);
+            painter.setViewport(prect.toRect());
             y = 0;
             drawNVUHeader(painter, lWPs[0], lWPs[lWPs.size() - 1], fork, y);
             y+=30;
@@ -627,11 +628,11 @@ void MainWindow::printPreview(QPrinter* printer)
     {
         printer->newPage();
         painter.setViewport(defvp);
-        prect = printer->pageRect();
+        prect = printer->pageRect(QPrinter::DevicePixel);
         if(ui->actionNightmode->isChecked()) painter.fillRect(prect, Qt::black);
         prect.setY(1000);
         prect.setX(1000);
-        painter.setViewport(prect);
+        painter.setViewport(prect.toRect());
         y = 0;
         painterDrawSummary(painter, lWPs, y);
     }
@@ -1007,7 +1008,7 @@ void MainWindow::painterDrawRunways(QPainter& painter, NVUPOINT* ap, int x, int 
         font.setBold(false);
         font.setPixelSize(150);
         painter.setFont(font);
-        int sw = width/2.0 - painter.fontMetrics().width("Longest runway NNAB / NNCD:  XXXXXm") - 150 - 1600;
+        int sw = width/2.0 - painter.fontMetrics().horizontalAdvance("Longest runway NNAB / NNCD:  XXXXXm") - 150 - 1600;
         painter.drawText(x + sw, y, "Longest runway" + (ap->name3.length()>0 ? " " + ap->name3 :"") + ":  " + QString::number(ap->length, 'f', 0) + "m");
 
         y+=25;
@@ -1038,7 +1039,7 @@ void MainWindow::painterDrawRunways(QPainter& painter, NVUPOINT* ap, int x, int 
         painter.setFont(font);
         ox = 0;
         oy = 0;
-        sw = painter.fontMetrics().width("NNCD: ");
+        sw = painter.fontMetrics().horizontalAdvance("NNCD: ");
         for(unsigned int i=0; i<lNav.size(); i++)
         {
             if(i == 5 || i == 10){ ox+= 1400; oy = 0;};
@@ -1812,7 +1813,7 @@ void MainWindow::painterDrawNVUPoint(QPainter& painter, NVUPOINT *wp, int wpNumb
         if(rsbn->type==WAYPOINT::TYPE_RSBN) qstr = "Ch " + QString::number((int)rsbn->freq);// + (wp->rsbn->name2.isEmpty() ? "" : "   " + wp->rsbn->name2);
         else qstr = QString::number(rsbn->freq, 'f', 3);// + (wp->rsbn->name2.isEmpty() ? "" : "   " + wp->rsbn->name2);
         painter.drawText(x + 50, y + rectH - 50, qstr);
-        int tWidth = painter.fontMetrics().width(qstr);
+        int tWidth = painter.fontMetrics().horizontalAdvance(qstr);
 
         font.setBold(false);
         painter.setFont(font);

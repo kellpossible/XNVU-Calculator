@@ -19,6 +19,7 @@
 #include <algorithm>
 #include "dialogsettings.h"
 #include <QDebug>
+#include <QRegularExpression>
 
 class RUNWAY
 {
@@ -195,7 +196,7 @@ std::vector<NVUPOINT*> XFMS_DATA::search(const QString& _name, int _type, int _I
 	{
         NVUPOINT* wp = it->second;
         if(_type>0 && wp->type != _type) continue;
-        if(_country!=NULL && !_country.isEmpty()) if(_country.compare(wp->country) !=0) continue;
+        if(!_country.isNull() && !_country.isEmpty()) if(_country.compare(wp->country) !=0) continue;
         rWP.push_back(wp);
 	}
 
@@ -207,7 +208,7 @@ std::vector<NVUPOINT*> XFMS_DATA::search(const QString& _name, int _type, int _I
     {
         NVUPOINT* wp = it->second;
         if(_type>0 && wp->type != _type) continue;
-        if(_country!=NULL && !_country.isEmpty()) if(_country.compare(wp->country) !=0) continue;
+        if(!_country.isNull() && !_country.isEmpty()) if(_country.compare(wp->country) !=0) continue;
         rWP.push_back(wp);
     }
 
@@ -302,7 +303,7 @@ QString XFMS_DATA::getAirwayWaypointsBetween(QString& airway, NVUPOINT* wpA, NVU
 //(see airway 'R487' and waypoint 'OK').
 QString XFMS_DATA::getRoute(const QString& _qstr, std::vector<NVUPOINT*>& _route, NVUPOINT* wpRef)
 {
-    QStringList record = _qstr.split(' ', QString::SkipEmptyParts);
+    QStringList record = _qstr.split(' ', Qt::SkipEmptyParts);
     std::vector<NVUPOINT*> sWaypoint;
     std::vector<NVUPOINT*> cRoute;
     std::vector<NVUPOINT*> route;
@@ -587,8 +588,8 @@ int XFMS_DATA::_loadXP10(const QString& file, int type)
         QString line = infile.readLine();
         QStringList list;
         if(type == 3 || type == 5) list = line.split('|');//, QString::SkipEmptyParts);                 //RSBN data (rsbn.dat) and xnvu_wps.txt
-        else if(type == 4) list = line.split(' ', QString::SkipEmptyParts);     //X-Plane navdata (earth_nav.dat) and all XP11 files
-        else list = line.split(',',  QString::SkipEmptyParts);                                          //XP10 other files
+        else if(type == 4) list = line.split(' ', Qt::SkipEmptyParts);     //X-Plane navdata (earth_nav.dat) and all XP11 files
+        else list = line.split(',',  Qt::SkipEmptyParts);                                          //XP10 other files
 
         switch(type) //else
         {
@@ -684,7 +685,7 @@ int XFMS_DATA::_loadWaypointsXP11(QString& sError)
         {
             QString line = inFile.readLine();
             QStringList list;
-            list = line.split(' ', QString::SkipEmptyParts);
+            list = line.split(' ', Qt::SkipEmptyParts);
             validate_waypoint_XP11(list, WAYPOINT::ORIGIN_X11_CUSTOM_FIXES);
         }//while
         inFile.close();
@@ -702,7 +703,7 @@ int XFMS_DATA::_loadWaypointsXP11(QString& sError)
         {
             QString line = inFile.readLine();
             QStringList list;
-            list = line.split(' ', QString::SkipEmptyParts);
+            list = line.split(' ', Qt::SkipEmptyParts);
             validate_waypoint_XP11(list, WAYPOINT::ORIGIN_X11_DEFAULT_FIXES);
         }//while
 
@@ -727,7 +728,7 @@ int XFMS_DATA::_loadNavDataXP11(QString& sError)
         {
             QString line = inFile.readLine();
             QStringList list;
-            list = line.split(' ', QString::SkipEmptyParts);
+            list = line.split(' ', Qt::SkipEmptyParts);
             validate_earthnav_XP11(list, WAYPOINT::ORIGIN_X11_CUSTOM_EARTHNAV);
         }//while
 
@@ -744,7 +745,7 @@ int XFMS_DATA::_loadNavDataXP11(QString& sError)
         {
             QString line = inFile.readLine();
             QStringList list;
-            list = line.split(' ', QString::SkipEmptyParts);
+            list = line.split(' ', Qt::SkipEmptyParts);
             validate_earthnav_XP11(list, WAYPOINT::ORIGIN_X11_DEFAULT_EARTHNAV);
         }//while
 
@@ -979,7 +980,7 @@ void XFMS_DATA::validate_airports_XP11(QFile& infile, int wpOrigin)
     while(!infile.atEnd())
     {
         line = infile.readLine();
-        record = line.split(' ', QString::SkipEmptyParts);
+        record = line.split(' ', Qt::SkipEmptyParts);
         for(int i=0; i<record.size(); i++)
         {
             qstr = record[i].simplified();
@@ -1309,7 +1310,7 @@ int XFMS_DATA::validate_header(QFile& infile)
         QString line;
 
         line = infile.readLine();
-        record = line.split(' ',  QString::SkipEmptyParts);
+        record = line.split(' ',  Qt::SkipEmptyParts);
         if(record.size()<6) continue;
 
         try
@@ -1361,7 +1362,7 @@ void XFMS_DATA::validate_cycle_info(QFile& infile, NAV_SOURCE_DATA &_navSource)
         QString line;
 
         line = infile.readLine();
-        record = line.split(' ',  QString::SkipEmptyParts);
+        record = line.split(' ',  Qt::SkipEmptyParts);
         if(record.size()<6) continue;
 
         try
@@ -1497,7 +1498,7 @@ void XFMS_DATA::validate_airways_XP11(QFile& infile, int _origin)
         QString line;
 
         line = infile.readLine();
-        record = line.split(' ',  QString::SkipEmptyParts);
+        record = line.split(' ',  Qt::SkipEmptyParts);
         try
         {
             for(unsigned int i=0; i<record.size(); i++)
@@ -1548,7 +1549,7 @@ void XFMS_DATA::validate_airways_XP11(QFile& infile, int _origin)
                     break;
                 case 10:
                     //aSeg.sharedAirways = qstr.split('-', QString::SkipEmptyParts);
-                    sharedAirways = qstr.split('-', QString::SkipEmptyParts);
+                    sharedAirways = qstr.split('-', Qt::SkipEmptyParts);
                     break;
                 }//switch
             }//for
@@ -2667,7 +2668,7 @@ void XFMS_DATA::validate_airways_XP10(QFile& infile)
     {
         QString line = infile.readLine();
         QStringList record;
-        record = line.split(',',  QString::SkipEmptyParts);
+        record = line.split(',',  Qt::SkipEmptyParts);
 
         for(unsigned int i=0; i<record.size(); i++)
         {
@@ -2803,7 +2804,7 @@ QString XFMS_DATA::validate_custom_point(const NVUPOINT* wpRef, NVUPOINT*& rPoin
     //Check if waypoint is detected as bearing and distance from waypoint
     QString sID = record;
     QString sBD = record;
-    int lIndex = sID.lastIndexOf(QRegExp("[A-Z]"));
+    int lIndex = sID.lastIndexOf(QRegularExpression("[A-Z]"));
     sID.truncate(lIndex+1);
     sBD.remove(0, lIndex+1);
 
@@ -2859,7 +2860,7 @@ QString XFMS_DATA::validate_custom_point(const NVUPOINT* wpRef, NVUPOINT*& rPoin
     int format;
 
     //Search for N/S tag, if not found return.
-    lIndex = record.lastIndexOf(QRegExp("[NS]"));
+    lIndex = record.lastIndexOf(QRegularExpression("[NS]"));
     sID = record.left(lIndex+1);
     if(sID.size()==0) return "Tag N or S is not found in custom waypoint [" + record + "].";
 
@@ -2901,9 +2902,9 @@ QString XFMS_DATA::validate_custom_point(const NVUPOINT* wpRef, NVUPOINT*& rPoin
 
     //Search for E/W tag, if not found return.
     sID = record;
-    lIndex = sID.lastIndexOf(QRegExp("[NS]"));
+    lIndex = sID.lastIndexOf(QRegularExpression("[NS]"));
     sID = sID.remove(0, lIndex+1);
-    lIndex = sID.lastIndexOf(QRegExp("[EW]"));
+    lIndex = sID.lastIndexOf(QRegularExpression("[EW]"));
     sID = sID.left(lIndex+1);
     if(sID.size()==0) return "Tag E or W is not found in custom waypoint [" + record + "].";
 
@@ -3287,7 +3288,7 @@ std::vector<NVUPOINT*> XFMS_DATA::loadFMS(const QString& file)
     {
         QString line = infile.readLine();
         QStringList list;
-        list = line.split(' ', QString::SkipEmptyParts);
+        list = line.split(' ', Qt::SkipEmptyParts);
 
         if(list.size() == 5)
         {

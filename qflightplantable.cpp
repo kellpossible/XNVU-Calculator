@@ -177,9 +177,7 @@ void QFlightplanTable::mousePressEvent(QMouseEvent* event)
 
 void QFlightplanTable::selectNone()
 {
-    QModelIndex qI = currentIndex();
-    qI = qI.child(-1, -1);
-    setCurrentIndex(qI);
+    setCurrentIndex(QModelIndex());
 }
 
 //Delete waypoint at row

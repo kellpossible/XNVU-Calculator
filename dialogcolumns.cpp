@@ -1,6 +1,7 @@
 #include "dialogcolumns.h"
 #include "ui_dialogcolumns.h"
 #include <dialogsettings.h>
+#include <QHeaderView>
 
 DialogColumns::DialogColumns(QFlightplanTable* _t, QWidget *parent) :
     QDialog(parent),

@@ -3,7 +3,6 @@
 
 #include <QDialog>
 #include <QPainter>
-#include "mainwindow.h"
 
 class CustomLoadingDialog : public QDialog
 {

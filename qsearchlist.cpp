@@ -25,17 +25,19 @@ void QSearchList::mousePressEvent(QMouseEvent* event)
     QModelIndex item = indexAt(event->pos());
     if (!item.isValid())
     {
-        QModelIndex qI = currentIndex();
-        qI = qI.child(-1, -1);
-        setCurrentIndex(qI);
+        // To clear the selection or set to an invalid index,
+        // use a default-constructed QModelIndex()
+        setCurrentIndex(QModelIndex());
     }
     else if(currentIndex() == item)
     {
-        QModelIndex qI = currentIndex();
-        qI = qI.child(-1, -1);
-        setCurrentIndex(qI);
+        // If the current index is clicked again, also set to an invalid index
+        setCurrentIndex(QModelIndex());
     }
-    else QListWidget::mousePressEvent(event);
+    else {
+        // If a valid, different item is clicked, let the base class handle it
+        QListWidget::mousePressEvent(event);
+    }
 }
 
 void QSearchList::search(const QString &name, bool filter)

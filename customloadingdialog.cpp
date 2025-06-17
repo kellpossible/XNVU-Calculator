@@ -1,6 +1,8 @@
 #include "customloadingdialog.h"
 #include <QFuture>
 #include <QtConcurrent>
+#include <QPointer>
+#include "mainwindow.h"
 #ifndef _WIN32
     #include <unistd.h>
 #endif
@@ -27,16 +29,28 @@ CustomLoadingDialog::CustomLoadingDialog(QWidget *parent) : QDialog(parent)
     resize(320, 240);
     setStyleSheet("background-image: url(:/images/splash.png);");
 
-    connect(this, SIGNAL(loadingFinished()), this, SLOT(loadingIsFinished()));
-    connect(this, SIGNAL(loadingStatus(const QString&)), this, SLOT(loadingDataStatus(const QString&)));
+    // Connect using new Qt5/Qt6 signal/slot syntax for type safety
+    connect(this, &CustomLoadingDialog::loadingFinished, this, &CustomLoadingDialog::loadingIsFinished);
+    connect(this, &CustomLoadingDialog::loadingStatus, this, &CustomLoadingDialog::loadingDataStatus);
+
     int dat = QDate::currentDate().toJulianDay();
     if(DialogSettings::customDateIsTrue)
     {
         QDate date = QDate::fromString(DialogSettings::customDate, "yyyy.MM.dd");
         dat = date.toJulianDay();
     }
-    QtConcurrent::run(this, &CustomLoadingDialog::runClean, dat);
 
+    // Capture 'this' safely using QPointer
+    QPointer<CustomLoadingDialog> self = this;
+
+    // Use a lambda to wrap the call to the member function
+    // The lambda captures 'self' (the QPointer) and 'dat' by value
+    QtConcurrent::run([self, dat]() {
+        // Important: Check if the dialog still exists before using it
+        if (!self.isNull()) {
+            self->runClean(dat);
+        }
+    });
 }
 
 void CustomLoadingDialog::paintEvent(QPaintEvent* painEvent)
